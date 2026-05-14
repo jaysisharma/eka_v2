@@ -13,8 +13,8 @@ import Link from "next/link";
 interface Project {
   id: string;
   title: string;
-  description: string;
-  status: string;
+  description: string | null;
+  status: any;
   progress: number;
   tags: string[];
   image: string | null;
