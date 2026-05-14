@@ -74,4 +74,5 @@ jobs:
 
           npm install --production
           npx prisma generate
+          npx prisma migrate deploy
           pm2 restart eka-research || pm2 start npm --name "eka-research" -- start

@@ -1,15 +1,16 @@
-import { 
-  User, 
-  MapPin, 
-  Globe, 
-  FileText, 
-  Rocket, 
-  Users, 
+import {
+  User,
+  MapPin,
+  Globe,
+  FileText,
+  Rocket,
+  Users,
   Award,
   ArrowRight,
   Mail,
   Briefcase,
   Send
+
 } from "lucide-react";
 import Link from "next/link";
 
@@ -47,7 +48,7 @@ export default function ResearcherPortfolio({ params }: { params: { id: string }
               </div>
               <h1 className="text-2xl font-black text-white leading-tight mb-2 uppercase">{researcher.name}</h1>
               <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-6">{researcher.role}</p>
-              
+
               <div className="flex justify-center gap-4 mb-8">
                 <button className="p-3 bg-white/5 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/10 transition-all border border-white/5">
                   <Mail className="w-4 h-4" />
@@ -96,7 +97,7 @@ export default function ResearcherPortfolio({ params }: { params: { id: string }
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <StatBox label="Publications" value={researcher.stats.publications} icon={<FileText className="w-4 h-4" />} />
                   <StatBox label="Citations" value={researcher.stats.citations} icon={<Award className="w-4 h-4" />} />
@@ -119,8 +120,8 @@ export default function ResearcherPortfolio({ params }: { params: { id: string }
 
               <div className="space-y-4">
                 {researcher.papers.map((paper) => (
-                  <Link 
-                    key={paper.id} 
+                  <Link
+                    key={paper.id}
                     href={`/research/${paper.id}`}
                     className="glass-panel p-6 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-primary/30 transition-all bg-white/5"
                   >
@@ -163,7 +164,7 @@ export default function ResearcherPortfolio({ params }: { params: { id: string }
                   Collaboration Network
                 </h3>
                 <div className="flex -space-x-3 overflow-hidden">
-                  {[1,2,3,4,5].map((i) => (
+                  {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="inline-block h-10 w-10 rounded-full ring-2 ring-[#020617] bg-white/10 border border-white/10 flex items-center justify-center">
                       <User className="w-5 h-5 text-slate-600" />
                     </div>
