@@ -1,0 +1,380 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  USER
+  PREMIUM
+  ACADEMIC_PREMIUM
+  RESEARCHER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaperStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+}
+
+enum Visibility {
+  PUBLIC
+  PREMIUM
+  PRIVATE
+}
+
+enum EventType {
+  WORKSHOP
+  LECTURE
+  CONFERENCE
+  SYMPOSIUM
+  MENTORSHIP_SESSION
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum MediaCategory {
+  EVENTS
+  RESEARCH
+  SPACE
+  ORGANIZATION
+  PROJECT
+}
+
+model User {
+  id                    String             @id @default(cuid())
+  name                  String?
+  email                 String?            @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  Role               @default(USER)
+  
+  // Profile
+  bio                   String?            @db.Text
+  interests             String[]
+  
+  // Academic Verification
+  academicStatus        VerificationStatus @default(PENDING)
+  institutionalEmail    String?
+  institutionDetails    String?
+  verificationNote      String?
+  proofUrl             String?
+
+  // Relations
+  accounts              Account[]
+  sessions              Session[]
+  authoredPapers        ResearchPaper[]    @relation("PaperAuthor")
+  createdProjects       Project[]          @relation("ProjectCreator")
+  collaboratedProjects  Project[]          @relation("ProjectCollaborator")
+  registrations         EventRegistration[]
+  bookmarks            Bookmark[]
+  comments             Comment[]
+  likes                Like[]
+  
+  // Mentorship
+  mentorshipPrograms    MentorshipProgram[] @relation("Mentor")
+  mentorshipApplications MentorshipApplication[] @relation("Mentee")
+  
+  // Opportunities
+  applications          OpportunityApplication[]
+
+  // Following
+  following             Follow[]           @relation("Follower")
+  followers             Follow[]           @relation("Following")
+  
+  // Notifications
+  notifications         Notification[]
+  
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  type        String   // "INFO", "SUCCESS", "WARNING", "ERROR"
+  isRead      Boolean  @default(false)
+  link        String?  // Optional link to redirect
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+}
+
+model ResearchPaper {
+  id            String      @id @default(cuid())
+  title         String
+  abstract      String      @db.Text
+  content       String      @db.Text
+  pdfUrl        String?
+  datasetUrl    String?
+  status        PaperStatus @default(DRAFT)
+  visibility    Visibility  @default(PUBLIC)
+  
+  authorId      String
+  author        User        @relation("PaperAuthor", fields: [authorId], references: [id])
+  
+  category      String
+  tags          String[]
+  
+  bookmarks     Bookmark[]
+  comments      Comment[]
+  likes         Like[]
+  
+  publishedAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String        @db.Text
+  userId    String
+  paperId   String
+  user      User          @relation(fields: [userId], references: [id])
+  paper     ResearchPaper @relation(fields: [paperId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Like {
+  id        String        @id @default(cuid())
+  userId    String
+  paperId   String
+  user      User          @relation(fields: [userId], references: [id])
+  paper     ResearchPaper @relation(fields: [paperId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, paperId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Opportunity {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  type          String   // "VACANCY", "INTERNSHIP"
+  location      String
+  salary        String?
+  requirements  String   @db.Text
+  deadline      DateTime
+  
+  applications  OpportunityApplication[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model OpportunityApplication {
+  id            String      @id @default(cuid())
+  opportunityId String
+  userId        String
+  resumeUrl     String
+  status        String      @default("PENDING") // "PENDING", "REVIEWED", "ACCEPTED", "REJECTED"
+  
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime    @default(now())
+}
+
+model MentorshipProgram {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  mentorId      String
+  mentor        User     @relation("Mentor", fields: [mentorId], references: [id])
+  
+  applications  MentorshipApplication[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model MentorshipApplication {
+  id            String            @id @default(cuid())
+  programId     String
+  menteeId      String
+  status        String            @default("PENDING")
+  
+  program       MentorshipProgram @relation(fields: [programId], references: [id])
+  mentee        User              @relation("Mentee", fields: [menteeId], references: [id])
+  
+  createdAt     DateTime          @default(now())
+}
+
+model NewsArticle {
+  id            String   @id @default(cuid())
+  title         String
+  content       String   @db.Text
+  imageUrl      String?
+  category      String
+  isFeatured    Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Event {
+  id            String              @id @default(cuid())
+  title         String
+  description   String              @db.Text
+  date          DateTime
+  location      String
+  seatCount     Int
+  bannerUrl     String?
+  type          EventType
+  
+  registrations EventRegistration[]
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model EventRegistration {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?  @db.Text
+  image         String?
+  progress      Int      @default(0)
+  status        ProjectStatus @default(PLANNED)
+  tags          String[]
+  
+  creatorId     String?
+  creator       User?    @relation("ProjectCreator", fields: [creatorId], references: [id])
+  
+  collaborators User[]   @relation("ProjectCollaborator")
+  
+  media         GalleryMedia[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Bookmark {
+  id        String        @id @default(cuid())
+  userId    String
+  paperId   String
+  user      User          @relation(fields: [userId], references: [id])
+  paper     ResearchPaper @relation(fields: [paperId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, paperId])
+}
+
+model GalleryMedia {
+  id          String        @id @default(cuid())
+  url         String
+  caption     String?
+  type        MediaType
+  category    String
+  
+  projectId   String?
+  project     Project?      @relation(fields: [projectId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+}
+
+model StoreProduct {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  price       Float
+  stock       Int
+  category    String
+  images      String[]
+  sizes       String[] // Added for variant support (S, M, L, etc.)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ProjectStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}
+
+model VerificationToken {
+  identifier String   @unique
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  status    String   @default("UNREAD") // UNREAD, READ, ARCHIVED
+  createdAt DateTime @default(now())
+}

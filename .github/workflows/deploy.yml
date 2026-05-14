@@ -1,0 +1,77 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Generate Prisma Client
+      run: npx prisma generate
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    - name: Build Application
+      run: npm run build
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+        AUTH_URL: ${{ secrets.AUTH_URL }}
+        EMAIL_SERVER_HOST: ${{ secrets.EMAIL_SERVER_HOST }}
+        EMAIL_SERVER_PORT: ${{ secrets.EMAIL_SERVER_PORT }}
+        EMAIL_SERVER_USER: ${{ secrets.EMAIL_SERVER_USER }}
+        EMAIL_SERVER_PASSWORD: ${{ secrets.EMAIL_SERVER_PASSWORD }}
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+        CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+        CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+    - name: Copy Files to Server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: ".next,public,package.json,package-lock.json,prisma,next.config.ts"
+        target: "~/eka-research"
+
+    - name: Post-Deployment Commands
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ~/eka-research
+          
+          # Create/Update .env file
+          echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" > .env
+          echo "AUTH_SECRET=\"${{ secrets.AUTH_SECRET }}\"" >> .env
+          echo "AUTH_URL=\"${{ secrets.AUTH_URL }}\"" >> .env
+          echo "EMAIL_SERVER_HOST=\"${{ secrets.EMAIL_SERVER_HOST }}\"" >> .env
+          echo "EMAIL_SERVER_PORT=\"${{ secrets.EMAIL_SERVER_PORT }}\"" >> .env
+          echo "EMAIL_SERVER_USER=\"${{ secrets.EMAIL_SERVER_USER }}\"" >> .env
+          echo "EMAIL_SERVER_PASSWORD=\"${{ secrets.EMAIL_SERVER_PASSWORD }}\"" >> .env
+          echo "EMAIL_FROM=\"${{ secrets.EMAIL_FROM }}\"" >> .env
+          echo "CLOUDINARY_CLOUD_NAME=\"${{ secrets.CLOUDINARY_CLOUD_NAME }}\"" >> .env
+          echo "CLOUDINARY_API_KEY=\"${{ secrets.CLOUDINARY_API_KEY }}\"" >> .env
+          echo "CLOUDINARY_API_SECRET=\"${{ secrets.CLOUDINARY_API_SECRET }}\"" >> .env
+
+          npm install --production
+          npx prisma generate
+          pm2 restart eka-research || pm2 start npm --name "eka-research" -- start
