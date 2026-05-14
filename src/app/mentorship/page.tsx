@@ -9,8 +9,6 @@ import {
   UserCheck,
   Globe
 } from "lucide-react";
-import Link from "next/link";
-
 const MOCK_MENTORS = [
   {
     id: "1",
