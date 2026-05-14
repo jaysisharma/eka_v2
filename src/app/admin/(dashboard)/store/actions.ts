@@ -18,7 +18,7 @@ export async function createProduct(data: {
     await prisma.storeProduct.create({
       data: {
         name: data.name,
-        description: data.description,
+        description: data.description || "",
         price: data.price,
         stock: data.stock,
         category: data.category || "General",
@@ -68,7 +68,7 @@ export async function updateProduct(id: string, data: {
       where: { id },
       data: {
         name: data.name,
-        description: data.description,
+        description: data.description || "",
         price: data.price,
         stock: data.stock,
         category: data.category || "General",
