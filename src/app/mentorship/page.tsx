@@ -10,8 +10,6 @@ import {
   Globe
 } from "lucide-react";
 
-
-
 const MOCK_MENTORS = [
   {
     id: "1",
