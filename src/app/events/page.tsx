@@ -117,7 +117,7 @@ export default function EventsArchive() {
             <span className="w-8 h-px bg-primary/30" />
             Upcoming Events
           </h2>
-          {MOCK_EVENTS.map((event) => (
+          {MOCK_EVENTS.map((event: { id: string; title: string; description: string; date: string; time: string; location: string; type: string; seatsTotal: number; seatsRemaining: number; isVirtual: boolean }) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>

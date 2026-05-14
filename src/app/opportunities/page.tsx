@@ -105,7 +105,7 @@ export default function OpportunitiesArchive() {
             <span className="w-8 h-px bg-primary/30" />
             Active Openings
           </h2>
-          {MOCK_OPPORTUNITIES.map((opportunity) => (
+          {MOCK_OPPORTUNITIES.map((opportunity: any) => (
             <OpportunityCard key={opportunity.id} opportunity={opportunity} />
           ))}
         </div>

@@ -1,12 +1,13 @@
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  ShieldCheck, 
+import {
+  Users,
+  Search,
+  Filter,
+  ShieldCheck,
   MessageSquare,
   Trophy,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 
@@ -60,19 +61,19 @@ export default function MentorshipPortal() {
 
         {/* Benefits Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-24">
-          <BenefitCard 
-            icon={<MessageSquare className="w-6 h-6" />} 
-            title="Direct Access" 
+          <BenefitCard
+            icon={<MessageSquare className="w-6 h-6" />}
+            title="Direct Access"
             desc="One-on-one sessions with senior researchers from global space agencies."
           />
-          <BenefitCard 
-            icon={<Trophy className="w-6 h-6" />} 
-            title="Career Pathing" 
+          <BenefitCard
+            icon={<Trophy className="w-6 h-6" />}
+            title="Career Pathing"
             desc="Strategic advice on navigating the aerospace industry and academic grants."
           />
-          <BenefitCard 
-            icon={<ShieldCheck className="w-6 h-6" />} 
-            title="Verified Mentors" 
+          <BenefitCard
+            icon={<ShieldCheck className="w-6 h-6" />}
+            title="Verified Mentors"
             desc="Every mentor is manually verified by the Eka Administrative Board."
           />
         </div>
@@ -86,8 +87,8 @@ export default function MentorshipPortal() {
           <div className="flex gap-4 w-full md:w-auto">
             <div className="relative group flex-1 md:flex-none">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search by expertise..."
                 className="w-full md:w-64 bg-slate-900/50 border border-white/5 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-primary/50 transition-all text-sm text-white placeholder:text-slate-600"
               />
@@ -101,7 +102,7 @@ export default function MentorshipPortal() {
 
         {/* Mentors Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {MOCK_MENTORS.map((mentor) => (
+          {MOCK_MENTORS.map((mentor: any) => (
             <MentorCard key={mentor.id} mentor={mentor} />
           ))}
         </div>
@@ -147,13 +148,13 @@ function MentorCard({ mentor }: any) {
           {mentor.availability}
         </div>
       </div>
-      
+
       <h3 className="text-xl font-bold text-white mb-1 group-hover:text-primary transition-colors">{mentor.name}</h3>
       <p className="text-xs text-slate-500 font-medium mb-6 uppercase tracking-wider">{mentor.role}</p>
-      
+
       <div className="space-y-4 mb-8">
         <div className="flex flex-wrap gap-2">
-          {mentor.expertise.map(exp => (
+          {mentor.expertise.map((exp: string) => (
             <span key={exp} className="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-1 rounded-lg">#{exp}</span>
           ))}
         </div>
