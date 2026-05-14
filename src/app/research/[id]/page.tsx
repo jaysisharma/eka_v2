@@ -11,10 +11,11 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { auth } from "@/lib/auth";
+import Link from "next/link";
 
 export default async function PaperDetails({ params }: { params: { id: string } }) {
   const session = await auth();
-  const userRole = session?.user?.role;
+  const userRole = (session?.user as any)?.role;
   const isPremium = true; // Mock: Assume this specific paper is a premium paper
   const isUserPremium = userRole === "ACADEMIC_PREMIUM" || userRole === "ADMIN";
 
